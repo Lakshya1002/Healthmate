@@ -7,6 +7,8 @@ const {
   updateMedicine
 } = require("../controllers/medicineController");
 
+const authenticateToken = require('../middleware/authMiddleware');
+
 router.post("/", addMedicine);
 router.get("/", getAllMedicines);
 router.delete("/:id", deleteMedicine);
