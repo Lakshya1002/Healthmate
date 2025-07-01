@@ -32,14 +32,20 @@ module.exports = { addMedicine };
 
 
 const getAllMedicines = (req, res) => {
-  const sql = "SELECT * FROM medicines ORDER BY medicine_id DESC";
+  const userId = req.user.id;
 
-  db.query(sql, (err, results) => {
+  const sql = `
+    SELECT * FROM medicines 
+    WHERE user_id = ? 
+    ORDER BY medicine_id DESC
+  `;
+
+  db.query(sql, [userId], (err, results) => {
     if (err) {
       console.error("❌ Error fetching medicines:", err);
       return res.status(500).json({ error: "Internal Server Error" });
     }
-    res.status(200).json(results); // return all rows
+    res.status(200).json(results);
   });
 };
 
