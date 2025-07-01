@@ -28,9 +28,6 @@ const addMedicine = (req, res) => {
 };
 
 
-module.exports = { addMedicine };
-
-
 const getAllMedicines = (req, res) => {
   const userId = req.user.id;
 
@@ -47,11 +44,6 @@ const getAllMedicines = (req, res) => {
     }
     res.status(200).json(results);
   });
-};
-
-module.exports = {
-  addMedicine,
-  getAllMedicines
 };
 
 const deleteMedicine = (req, res) => {
