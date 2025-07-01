@@ -8,6 +8,16 @@ const addMedicine = (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
+  const values = [
+    name,
+    dosage,
+    method,
+    toNull(start_date),
+    toNull(end_date),
+    notes,
+    userId,
+  ];
+
   db.query(sql, [name, dosage, method, start_date, end_date, notes], (err, result) => {
     if (err) {
       console.error("❌ Error adding medicine:", err);
