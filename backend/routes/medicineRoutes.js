@@ -9,6 +9,9 @@ const {
 
 const authenticateToken = require('../middleware/authMiddleware');
 
+// 🔐 Protect all routes below
+router.use(authenticateToken);
+
 router.post("/", addMedicine);
 router.get("/", getAllMedicines);
 router.delete("/:id", deleteMedicine);
