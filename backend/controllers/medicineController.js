@@ -1,5 +1,5 @@
 const db = require("../config/db");
-
+const toNull = (value) => (value === "" ? null : value);
 const addMedicine = (req, res) => {
   const { name, dosage, method, start_date, end_date, notes } = req.body;
 
