@@ -17,8 +17,8 @@ const addMedicine = (req, res) => {
     notes,
     userId,
   ];
-
-  db.query(sql, [name, dosage, method, start_date, end_date, notes], (err, result) => {
+  
+  db.query(sql, values, (err, result) => {
     if (err) {
       console.error("❌ Error adding medicine:", err);
       return res.status(500).json({ error: "Internal Server Error" });
@@ -26,6 +26,7 @@ const addMedicine = (req, res) => {
     res.status(201).json({ message: "✅ Medicine added successfully!" });
   });
 };
+
 
 module.exports = { addMedicine };
 
