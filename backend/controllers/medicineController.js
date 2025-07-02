@@ -68,11 +68,6 @@ const deleteMedicine = (req, res) => {
   });
 };
 
-module.exports = {
-  addMedicine,
-  getAllMedicines,
-  deleteMedicine
-};
 
 // ✅ Update Medicine (only user's own)
 const updateMedicine = (req, res) => {
@@ -112,5 +107,5 @@ module.exports = {
   addMedicine,
   getAllMedicines,
   deleteMedicine,
-  updateMedicine
+  updateMedicine,
 };
