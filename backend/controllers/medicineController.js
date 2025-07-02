@@ -1,11 +1,18 @@
+// backend/controllers/medicineController.js
+
 const db = require("../config/db");
+
+// Helper to convert empty strings to null for database insertion
 const toNull = (value) => (value === "" ? null : value);
+
+// ✅ Add Medicine (user-specific)
 const addMedicine = (req, res) => {
+  const userId = req.user.id;
   const { name, dosage, method, start_date, end_date, notes } = req.body;
 
   const sql = `
-    INSERT INTO medicines (name, dosage, method, start_date, end_date, notes)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO medicines (name, dosage, method, start_date, end_date, notes, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
@@ -17,7 +24,7 @@ const addMedicine = (req, res) => {
     notes,
     userId,
   ];
-  
+
   db.query(sql, values, (err, result) => {
     if (err) {
       console.error("❌ Error adding medicine:", err);
@@ -27,7 +34,7 @@ const addMedicine = (req, res) => {
   });
 };
 
-
+// ✅ Get All Medicines (for logged-in user only)
 const getAllMedicines = (req, res) => {
   const userId = req.user.id;
 
@@ -68,7 +75,6 @@ const deleteMedicine = (req, res) => {
   });
 };
 
-
 // ✅ Update Medicine (only user's own)
 const updateMedicine = (req, res) => {
   const userId = req.user.id;
@@ -103,6 +109,8 @@ const updateMedicine = (req, res) => {
     res.status(200).json({ message: "✅ Medicine updated successfully" });
   });
 };
+
+// Export all functions in a single, clean object
 module.exports = {
   addMedicine,
   getAllMedicines,
