@@ -46,24 +46,28 @@ const getAllMedicines = (req, res) => {
   });
 };
 
+// ✅ Delete Medicine (only user's own)
 const deleteMedicine = (req, res) => {
+  const userId = req.user.id;
   const id = req.params.id;
 
-  const sql = "DELETE FROM medicines WHERE medicine_id = ?";
+  const sql = `
+    DELETE FROM medicines 
+    WHERE medicine_id = ? AND user_id = ?
+  `;
 
-  db.query(sql, [id], (err, result) => {
+  db.query(sql, [id, userId], (err, result) => {
     if (err) {
       console.error("❌ Error deleting medicine:", err);
       return res.status(500).json({ error: "Internal Server Error" });
     }
-
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Medicine not found" });
+      return res.status(404).json({ message: "Medicine not found or unauthorized" });
     }
-
     res.status(200).json({ message: "✅ Medicine deleted successfully" });
   });
 };
+
 module.exports = {
   addMedicine,
   getAllMedicines,
