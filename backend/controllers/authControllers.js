@@ -16,3 +16,24 @@ const signup = (req, res) => {
   });
 };
 
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  const sql = 'SELECT * FROM users WHERE email = ?';
+  db.query(sql, [email], (err, results) => {
+    if (err || results.length === 0) return res.status(401).json({ error: 'Invalid email or password' });
+
+    const user = results[0];
+
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err || !isMatch) return res.status(401).json({ error: 'Invalid email or password' });
+
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+      res.json({
+        token,
+        user: { id: user.id, name: user.name, email: user.email }
+      });
+    });
+  });
+};
