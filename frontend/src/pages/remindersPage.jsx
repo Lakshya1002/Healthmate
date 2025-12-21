@@ -9,6 +9,7 @@ import { Bell, Check, X, Trash2, Plus, Clock, CheckCircle, XCircle, Edit, Calend
 import { fetchReminders, updateReminder, deleteReminder } from '../api';
 import Loader from '../components/Loader';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal'; // Import the Modal component
 import '../remindersPage.css';
 
 // A card to highlight the very next upcoming dose.
@@ -108,6 +109,9 @@ const RemindersPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
+    // State for the new delete confirmation modal
+    const [deletingReminder, setDeletingReminder] = useState(null);
+
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -124,10 +128,6 @@ const RemindersPage = () => {
 
     useEffect(() => {
         loadData();
-        // ✅ FIXED: Removed the aggressive toast dismissal from the cleanup function.
-        // This prevents the component from interfering with global toasts from the header.
-        // The only toast that needs manual dismissal is the delete confirmation,
-        // which is handled separately.
     }, [loadData]);
 
     const handleUpdateStatus = async (id, status) => {
@@ -145,8 +145,10 @@ const RemindersPage = () => {
         }
     };
 
-    const handleConfirmDelete = async (id) => {
-        const promise = deleteReminder(id);
+    const handleConfirmDelete = async () => {
+        if (!deletingReminder) return;
+
+        const promise = deleteReminder(deletingReminder.id);
         toast.promise(promise, {
             loading: 'Deleting reminder...',
             success: 'Reminder deleted!',
@@ -156,77 +158,16 @@ const RemindersPage = () => {
         try {
             await promise;
             loadData();
+            setDeletingReminder(null); // Close the modal
         } catch (error) {
             console.error(error);
         }
     };
 
     const handleDeleteRequest = (reminder) => {
-        // Dismiss any other toasts before showing the confirmation.
-        toast.dismiss(); 
-
-        const getFrequencyText = () => {
-            if (!reminder) return '';
-            switch (reminder.frequency) {
-                case 'weekly':
-                    return `on ${reminder.week_days.split(',').join(', ')}`;
-                case 'interval':
-                    return `every ${reminder.day_interval} days`;
-                case 'daily':
-                default:
-                    return 'every day';
-            }
-        };
-        
-        toast.custom((t) => (
-            <AnimatePresence>
-                {t.visible && (
-                    <motion.div
-                        className="delete-confirmation-toast"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <motion.div
-                            className="delete-toast"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                        >
-                            <div className="delete-toast-icon">
-                                <Trash2 size={28} />
-                            </div>
-                            <h4>Delete Reminder?</h4>
-                            <p>You are about to delete the following reminder. This action cannot be undone.</p>
-                            
-                            <div className="reminder-details-summary">
-                                <p><strong>Medicine:</strong> {reminder.medicine_name}</p>
-                                <p><strong>Time:</strong> {reminder.reminder_time.slice(0, 5)}</p>
-                                <p><strong>Frequency:</strong> {getFrequencyText()}</p>
-                            </div>
-
-                            <div className="toast-actions">
-                                <Button variant="secondary" onClick={() => toast.dismiss(t.id)}>
-                                    Cancel
-                                </Button>
-                                <Button variant="danger" onClick={() => {
-                                    handleConfirmDelete(reminder.id);
-                                    toast.dismiss(t.id);
-                                }}>
-                                    Yes, Delete
-                                </Button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        ), {
-            duration: Infinity, 
-            id: `delete-confirmation-${reminder.id}`
-        });
+        setDeletingReminder(reminder);
     };
-    
+
     const handleAddClick = () => {
         navigate('/reminders/add');
     };
@@ -311,6 +252,18 @@ const RemindersPage = () => {
                     </div>
                 )}
             </div>
+
+            <Modal isOpen={!!deletingReminder} onClose={() => setDeletingReminder(null)} title="Confirm Deletion">
+                {deletingReminder && (
+                    <>
+                        <p>Are you sure you want to delete the reminder for <strong>{deletingReminder.medicine_name}</strong>?</p>
+                        <div className="modal-actions">
+                            <Button variant="secondary" onClick={() => setDeletingReminder(null)}>Cancel</Button>
+                            <Button variant="danger" onClick={handleConfirmDelete}>Delete</Button>
+                        </div>
+                    </>
+                )}
+            </Modal>
         </div>
     );
 };
